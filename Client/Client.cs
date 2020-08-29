@@ -22,7 +22,7 @@ namespace Eternar.RCCar.Client
 
         public bool CameraState;
 
-        public double Battery;
+        public const float MaxDistance = 250.0f;
 
         public Client()
         {
@@ -39,6 +39,11 @@ namespace Eternar.RCCar.Client
             Vector3 PlayerPos = GetEntityCoords(PlayerPedId(), true);
             Vector3 CarPos = GetEntityCoords(Entity, true);
             float distanceCheck = GetDistanceBetweenCoords(PlayerPos.X, PlayerPos.Y, PlayerPos.Z, CarPos.X, CarPos.Y, CarPos.Z, true);
+
+            if(GetVehicleEngineHealth(Entity) <= 649.0f)
+            {
+                ExplodeVehicle(Entity, true, false);
+            }
 
             DrawInstructions(distanceCheck);
             HandleKeys(distanceCheck);
@@ -65,37 +70,43 @@ namespace Eternar.RCCar.Client
 
                 SetTimecycleModifier("scanline_cam_cheap");
 
-                float distPer = (distanceCheck / 100.0f) * 10;
+                float distPer = (distanceCheck / MaxDistance) * 10;
                 distPer /= 2;
 
                 if(distPer <= 2.0f)
                 {
                     distPer = 2.0f;
-                    DrawSprite("mpleaderboard", "leaderboard_audio_3", 0.500f, 0.750f, 0.04f, 0.06f, 0.0f, 0, 255, 0, 255);
+                    DrawSprite("mpleaderboard", "leaderboard_audio_3", 0.095f, 0.750f, 0.04f, 0.06f, 0.0f, 0, 255, 0, 255);
                 } else if(distPer >= 2.01f && distPer <= 3.49f)
                 {
-                    DrawSprite("mpleaderboard", "leaderboard_audio_2", 0.500f, 0.750f, 0.04f, 0.06f, 0.0f, 255, 255, 0, 255);
+                    DrawSprite("mpleaderboard", "leaderboard_audio_2", 0.095f, 0.750f, 0.04f, 0.06f, 0.0f, 255, 255, 0, 255);
                 } else if(distPer >= 3.5f && distPer <= 4.99f)
                 {
-                    DrawSprite("mpleaderboard", "leaderboard_audio_1", 0.500f, 0.750f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
+                    DrawSprite("mpleaderboard", "leaderboard_audio_1", 0.095f, 0.750f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
                 } else if(distPer > 5.0f)
                 {
-                    DrawSprite("mpleaderboard", "leaderboard_audio_mute", 0.500f, 0.750f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
+                    DrawSprite("mpleaderboard", "leaderboard_audio_mute", 0.095f, 0.750f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
                 }
 
                 float fuel = GetVehicleFuelLevel(Entity);
                 if(fuel > 75.0f)
                 {
-                    DrawSprite("mpsrange", "panelback", 0.500f, 0.700f, 0.04f, 0.06f, 0.0f, 0, 255, 0, 255);
-                    DrawSprite("mpsrange", "panelback", 0.475f, 0.700f, 0.04f, 0.06f, 0.0f, 0, 255, 0, 255);
-                    DrawSprite("mpsrange", "panelback", 0.450f, 0.700f, 0.04f, 0.06f, 0.0f, 0, 255, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.05f, 0.800f, 0.025f, 0.024f, 0.0f, 0, 255, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.08f, 0.800f, 0.025f, 0.024f, 0.0f, 0, 255, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.11f, 0.800f, 0.025f, 0.024f, 0.0f, 0, 255, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.14f, 0.800f, 0.025f, 0.024f, 0.0f, 0, 255, 0, 255);
                 } else if(fuel > 50.0f)
                 {
-                    DrawSprite("mpsrange", "panelback", 0.500f, 0.700f, 0.04f, 0.06f, 0.0f, 255, 255, 0, 255);
-                    DrawSprite("mpsrange", "panelback", 0.475f, 0.700f, 0.04f, 0.06f, 0.0f, 255, 255, 0, 255);
-                } else if(fuel > 0.0f)
+                    DrawSprite("mpsrange", "panelback", 0.05f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 255, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.08f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 255, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.11f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 255, 0, 255);
+                } else if(fuel > 25.0f)
                 {
-                    DrawSprite("mpsrange", "panelback", 0.500f, 0.700f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.05f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 0, 0, 255);
+                    DrawSprite("mpsrange", "panelback", 0.08f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 0, 0, 255);
+                }else if(fuel > 0.0f)
+                {
+                    DrawSprite("mpsrange", "panelback", 0.05f, 0.800f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
                 }
 
                 SetTimecycleModifierStrength(distPer);
@@ -136,7 +147,7 @@ namespace Eternar.RCCar.Client
                     Vector3 CarPos = GetEntityCoords(Entity, true);
                     float distanceCheck = GetDistanceBetweenCoords(PlayerPos.X, PlayerPos.Y, PlayerPos.Z, CarPos.X, CarPos.Y, CarPos.Z, true);
 
-                    if (distanceCheck < 100.0f)
+                    if (distanceCheck < MaxDistance)
                     {
                         if (!NetworkHasControlOfEntity(Driver))
                         {
@@ -166,6 +177,11 @@ namespace Eternar.RCCar.Client
             SetVehicleModKit(Entity, 0);
             SetVehicleMod(Entity, 5, GetRandomIntInRange(0, 20), false);
             SetVehicleModColor_1(Entity, 0, GetRandomIntInRange(1, 160), 0);
+
+            SetVehicleEngineHealth(Entity, 650.0f);
+            Vehicle vehicle = new Vehicle(Entity);
+            //vehicle.Mods.
+              
 
             while(!DoesEntityExist(Entity))
             {
@@ -240,11 +256,21 @@ namespace Eternar.RCCar.Client
                 {
                     ["label"] = "Left",
                     ["button"] = "~INPUT_CELLPHONE_LEFT~"
+                },
+                [4] = new Dictionary<string, string>
+                {
+                    ["label"] = "Scroll Down",
+                    ["button"] = "~INPUT_CELLPHONE_SCROLL_FORWARD~"
+                },
+                [5] = new Dictionary<string, string>
+                {
+                    ["label"] = "Scroll Up",
+                    ["button"] = "~INPUT_CELLPHONE_SCROLL_BACKWARD~"
                 }
             };
             Dictionary<int, Dictionary<string, string>> buttonsToDraw = new Dictionary<int, Dictionary<string, string>>();
 
-            if (distanceCheck <= 100.0f)
+            if (distanceCheck <= MaxDistance)
             {
                 for(int i = 0; i < steeringButtons.Count; i++)
                 {
@@ -314,7 +340,7 @@ namespace Eternar.RCCar.Client
                 return;
             }
 
-            if(distanceCheck < 100.0f)
+            if(distanceCheck < MaxDistance)
             {
                 if (IsControlPressed(0, 172) && !IsControlPressed(0, 173))
                     TaskVehicleTempAction(Driver, Entity, 9, 1);
@@ -345,6 +371,21 @@ namespace Eternar.RCCar.Client
 
                 if (IsControlPressed(0, 175) && !IsControlPressed(0, 172) && !IsControlPressed(0, 173))
                     TaskVehicleTempAction(Driver, Entity, 5, 1);
+
+                if(IsControlPressed(0, 314))
+                {
+                    if (GetCamFov(Camera) < 100.0f)
+                    {
+                        SetCamFov(Camera, GetCamFov(Camera) + 0.3f);
+                    }
+                }
+                if (IsControlPressed(0, 315))
+                {
+                    if (GetCamFov(Camera) > 5.0f)
+                    {
+                        SetCamFov(Camera, GetCamFov(Camera) - 0.3f);
+                    }
+                }
             }
         }
 
