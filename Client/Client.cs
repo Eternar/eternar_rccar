@@ -23,17 +23,19 @@ namespace Eternar.RCCar.Client
         public bool CameraState;
 
         public const float MaxDistance = 250.0f;
+        public const float ChargeValue = 25.0f;
+        public const float ConsumptionRate = 0.01f;
 
         public Client()
         {
-            EventHandlers["Eternar::RCCar::PLACE"] += new Action(Start);
-            EventHandlers["Eternar::RCCar::CHARGE"] += new Action(Charge);
+            EventHandlers["Eternar::RCCar::Place"] += new Action(Start);
+            EventHandlers["Eternar::RCCar::Charge"] += new Action(Charge);
             Tick += OnGameFrame;
         }
 
         private async Task OnGameFrame()
         {
-            if (!DoesEntityExist(Entity) && !DoesEntityExist(Driver))
+            if (!DoesEntityExist(Entity) || !DoesEntityExist(Driver))
                 return;
 
             Vector3 PlayerPos = GetEntityCoords(PlayerPedId(), true);
@@ -104,7 +106,7 @@ namespace Eternar.RCCar.Client
                 {
                     DrawSprite("mpsrange", "panelback", 0.05f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 0, 0, 255);
                     DrawSprite("mpsrange", "panelback", 0.08f, 0.800f, 0.025f, 0.024f, 0.0f, 255, 0, 0, 255);
-                }else if(fuel > 0.0f)
+                } else if(fuel > 0.0f)
                 {
                     DrawSprite("mpsrange", "panelback", 0.05f, 0.800f, 0.04f, 0.06f, 0.0f, 255, 0, 0, 255);
                 }
@@ -116,7 +118,10 @@ namespace Eternar.RCCar.Client
         private void Charge()
         {
             if (!DoesEntityExist(Entity))
+            {
+                ESX.ShowNotification("$DOES_NOT_EXIST");
                 return;
+            }
 
             Vector3 PlayerPos = GetEntityCoords(PlayerPedId(), true);
             Vector3 CarPos = GetEntityCoords(Entity, true);
@@ -124,9 +129,24 @@ namespace Eternar.RCCar.Client
 
             if (distanceCheck <= 1.5)
             {
-                TaskPlayAnim(PlayerPedId(), "pickup_object", "pickup_low", 8.0f, -8.0f, -1, 0, 0, false, false, false);
-                SetVehicleFuelLevel(Entity, GetVehicleFuelLevel(Entity) + 25.0f);
+                float fuel = GetVehicleFuelLevel(Entity);
+
+                if (fuel < 100.0f)
+                {
+                    TaskPlayAnim(PlayerPedId(), "pickup_object", "pickup_low", 8.0f, -8.0f, -1, 0, 0, false, false, false);
+                    SetVehicleFuelLevel(Entity, fuel + ChargeValue);
+                } else
+                {
+                    ESX.ShowNotification("$MAX_CHARGE");
+                    return;
+                }
+            } else
+            {
+                ESX.ShowNotification("$TOO_FAR_AWAY");
+                return;
             }
+
+            TriggerServerEvent("Eternar::RCCar::ManageBattery", GetPlayerServerId(LocalPlayer.Handle));
         }
 
         private void Start()
@@ -142,7 +162,7 @@ namespace Eternar.RCCar.Client
                 {
                     await Delay(5);
 
-                    SetVehicleFuelLevel(Entity, GetVehicleFuelLevel(Entity) - 0.01f);
+                    SetVehicleFuelLevel(Entity, GetVehicleFuelLevel(Entity) - ConsumptionRate);
                     Vector3 PlayerPos = GetEntityCoords(PlayerPedId(), true);
                     Vector3 CarPos = GetEntityCoords(Entity, true);
                     float distanceCheck = GetDistanceBetweenCoords(PlayerPos.X, PlayerPos.Y, PlayerPos.Z, CarPos.X, CarPos.Y, CarPos.Z, true);
@@ -179,10 +199,7 @@ namespace Eternar.RCCar.Client
             SetVehicleModColor_1(Entity, 0, GetRandomIntInRange(1, 160), 0);
 
             SetVehicleEngineHealth(Entity, 650.0f);
-            Vehicle vehicle = new Vehicle(Entity);
-            //vehicle.Mods.
               
-
             while(!DoesEntityExist(Entity))
             {
                 await Delay(5);
@@ -473,7 +490,7 @@ namespace Eternar.RCCar.Client
 
                 UnloadModels();
 
-                ESX.TriggerServerCallback("Eternar::RCCar::GET", new Action<dynamic>((data) => {}));
+                TriggerServerEvent("Eternar::RCCar::PickUp", GetPlayerServerId(LocalPlayer.Handle));
             }
         }
 

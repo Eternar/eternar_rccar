@@ -12,20 +12,15 @@ namespace Eternar.RCCar.Server
         public Server()
         {
             EventHandlers["onResourceStart"] += new Action<string>(OnResourceStart);
+
+            EventHandlers["Eternar::RCCar::ManageItem"] += new Action<int>(ManageBattery);
+            EventHandlers["Eternar::RCCar::PickUp"] += new Action<int>(PickUp);
         }
 
         private void OnResourceStart(string resourceName)
         {
             if (GetCurrentResourceName() != resourceName)
                 return;
-
-            ESX.RegisterServerCallback("Eternar::RCCar::GET", new Action<int, CallbackDelegate, dynamic>((source, cb, data) =>
-            {
-                xPlayer xPlayer = ESX.GetPlayerFromId(source);
-
-                if(xPlayer.GetInventoryItem("rccar").count <= 0)
-                    xPlayer.AddInventoryItem("rccar", 1);
-            }));
 
             ESX.RegisterUsableItem("rccar", new Action<int>((source) =>
             {
@@ -34,18 +29,29 @@ namespace Eternar.RCCar.Server
                 if(xPlayer.GetInventoryItem("rccar").count >= 1)
                     xPlayer.RemoveInventoryItem("rccar", 1);
 
-                TriggerClientEvent("Eternar::RCCar::PLACE", source);
+                TriggerClientEvent("Eternar::RCCar::Place", source);
             }));
 
             ESX.RegisterUsableItem("duracell", new Action<int>((source) =>
             {
-                xPlayer xPlayer = ESX.GetPlayerFromId(source);
-
-                if (xPlayer.GetInventoryItem("duracell").count >= 1)
-                    xPlayer.RemoveInventoryItem("duracell", 1);
-
-                TriggerClientEvent("Eternar::RCCar::CHARGE", source);
+                TriggerClientEvent("Eternar::RCCar::Charge", source);
             }));
+        }
+
+        private void ManageBattery(int source)
+        {
+            xPlayer xPlayer = ESX.GetPlayerFromId(source);
+
+            if (xPlayer.GetInventoryItem("duracell").count >= 1)
+                xPlayer.RemoveInventoryItem("duracell", 1);
+        }
+
+        private void PickUp(int source)
+        {
+            xPlayer xPlayer = ESX.GetPlayerFromId(source);
+
+            if (xPlayer.GetInventoryItem("rccar").count <= 0)
+                xPlayer.AddInventoryItem("rccar", 1);
         }
     }
 }
